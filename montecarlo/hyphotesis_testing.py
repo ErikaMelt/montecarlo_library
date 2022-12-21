@@ -1,66 +1,30 @@
 import numpy as np
 import pandas as pd
 
-def generate_permutation_samples(x, y, estimator, n_iter=None, two_sided=True,
-                                 random_seed=None, verbose=False, **kwargs) -> list:
+def generate_bootstrap_values(data, estimator, sample_size=None, n_samples=None,
+                              random_seed=None, verbose=False, **kwargs) -> list:
     """_summary_
 
     Parameters
     ----------
-    x : list of floats
-        One list of samples to permute 
-    y : list of floats 
-        Second list of samples to permute
-    estimator : statistic estimator mean, median. 
-        The statistic function to use 
-    n_iter : integer, optional
-        The number of iterations, by default None
-    two_sided : bool, optional
-        The comparison for the null hyphotesys, by default True
-    random_seed : float, optional
-        the seed, by default None
+    data : _type_
+        _description_
+    estimator : _type_
+        _description_
+    sample_size : _type_, optional
+        _description_, by default None
+    n_samples : _type_, optional
+        _description_, by default None
+    random_seed : _type_, optional
+        _description_, by default None
     verbose : bool, optional
-        Display the function information, by default False
+        _description_, by default False
 
     Returns
     -------
     list
-        List of samples values calculated based on the estimator
+        _description_
     """
-
-    samples=[]
- 
-    if n_iter is None:
-        n_iter = (len(x) + len(y)) * 10
-
-    if random_seed is not None:
-        np.random.seed(random_seed)
-
-    conc_sample = list(x) + list(y)
-
-    batch_1 = len(x)
-    batch_2 = len(x) + len(y)
-  
-    samples = [estimator(x, **kwargs) - estimator(y, **kwargs)]
-    for _ in np.arange(n_iter):
-        perm_sample = np.random.choice(conc_sample, size=len(conc_sample))
-
-    if verbose:
-      print(perm_sample)
-    
-    this_sample = estimator(
-        perm_sample[:batch_1], **kwargs) - estimator(
-            perm_sample[batch_1:batch_2], **kwargs)
-    samples.append(this_sample)
-
-    if two_sided:
-        samples = [np.abs(s) for s in samples]
-
-    return samples
-
-def generate_bootstrap_values(data, estimator, sample_size=None, n_samples=None,
-                              random_seed=None, verbose=False, **kwargs):
-
     if sample_size is None:
         sample_size = 10 * len(data)
 
@@ -74,15 +38,80 @@ def generate_bootstrap_values(data, estimator, sample_size=None, n_samples=None,
     for _ in np.arange(n_samples):
         sample = np.random.choice(data, size=sample_size, replace=True)  # Repeticiones aleatorias 
 
-    if verbose:
-      print(sample)
+        if verbose:
+            print(sample)
 
-    bs = estimator(sample, **kwargs)
-    bootstrap_values.append(bs)
+        bs = estimator(sample, **kwargs)
+        bootstrap_values.append(bs)
 
     return bootstrap_values
 
-def get_pvalue(test, data, alpha=0.05):
+def generate_permutation_samples(x, y, estimator, n_iter=None, two_sided=True,
+                                 random_seed=None, verbose=False, **kwargs) -> list:
+    """_summary_
+
+    Parameters
+    ----------
+    x : _type_
+        _description_
+    y : _type_
+        _description_
+    estimator : _type_
+        _description_
+    n_iter : _type_, optional
+        _description_, by default None
+    two_sided : bool, optional
+        _description_, by default True
+    random_seed : _type_, optional
+        _description_, by default None
+    verbose : bool, optional
+        _description_, by default False
+
+    Returns
+    -------
+    list
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    """ 
+    if n_iter is None:
+        n_iter = (len(x) + len(y)) * 10
+
+    if n_iter < 0: 
+      raise ValueError("Value cannot be negative")
+  
+    if random_seed is not None:
+        np.random.seed(random_seed)
+
+    conc_sample = list(x) + list(y)
+    batch_1 = len(x)
+    batch_2 = len(x) + len(y)
+  
+    samples = [estimator(x, **kwargs) - estimator(y, **kwargs)]
+
+    
+    for _ in np.arange(n_iter):
+        perm_sample = np.random.choice(conc_sample, size=len(conc_sample))
+
+        if verbose:
+            print(perm_sample)
+    
+        this_sample = estimator(
+            perm_sample[:batch_1], **kwargs) - estimator(
+                perm_sample[batch_1:batch_2], **kwargs)
+            
+        samples.append(this_sample)
+
+    if two_sided:
+        samples = [np.abs(s) for s in samples]
+
+
+    return samples
+
+def get_pvalue(test, data, alpha=0.05) -> list:
     """_summary_
 
     Parameters
@@ -96,26 +125,12 @@ def get_pvalue(test, data, alpha=0.05):
 
     Returns
     -------
-    _type_
+    list
         _description_
-    """    
-  
+    """   
     bootstrap_values = np.array(data)
     p_value = len(bootstrap_values[bootstrap_values < test]) / len(bootstrap_values)
 
     p_value = np.min([p_value, 1. - p_value])
 
     return [p_value, p_value < alpha] 
-
-path = '/Users/eo/src/montecarlo_library/montecarlo/tests/data/server_requests.csv'
-df = pd.read_csv(path, sep=",")
-print(df)
-
-
-data = generate_permutation_samples(x=df[df.day_type=="workday"].seconds_since_last,
-                                    y=df[df.day_type=="weekend"].seconds_since_last,
-                                    estimator=np.mean,
-                                    n_iter=4000)
-
-
-print(data)
