@@ -43,7 +43,7 @@ setup(
     packages=find_packages(include=['montecarlo', 'montecarlo.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/erikaMelt/montecarlo',
+    url='https://github.com/ErikaMelt/montecarlo_library',
     version='0.1.0',
     zip_safe=False,
 )
