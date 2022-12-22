@@ -7,23 +7,23 @@ def generate_bootstrap_values(data, estimator, sample_size=None, n_samples=None,
 
     Parameters
     ----------
-    data : _type_
-        _description_
-    estimator : _type_
-        _description_
-    sample_size : _type_, optional
-        _description_, by default None
-    n_samples : _type_, optional
-        _description_, by default None
-    random_seed : _type_, optional
-        _description_, by default None
+    data : list
+        The list of values to generate the bootstrap values
+    estimator : string
+        The estimator to use it can be mean or median
+    sample_size : number, optional
+        The sample size to use, by default None
+    n_samples : number, optional
+        The number of iterations, by default None
+    random_seed : number, optional
+        The reference point or seed, by default None
     verbose : bool, optional
-        _description_, by default False
+        To print the output of the process, by default False
 
     Returns
     -------
     list
-        _description_
+        List of bootstrap values generated
     """
     if sample_size is None:
         sample_size = 10 * len(data)
@@ -52,25 +52,25 @@ def generate_permutation_samples(x, y, estimator, n_iter=None, two_sided=True,
 
     Parameters
     ----------
-    x : _type_
+    x : float
         _description_
-    y : _type_
+    y : float
         _description_
-    estimator : _type_
+    estimator : string
         _description_
-    n_iter : _type_, optional
+    n_iter : number, optional
         _description_, by default None
     two_sided : bool, optional
         _description_, by default True
-    random_seed : _type_, optional
-        _description_, by default None
+    random_seed : number, optional
+        The reference point or seed, by default None
     verbose : bool, optional
-        _description_, by default False
+        To print the output of the process, by default False
 
     Returns
     -------
     list
-        _description_
+        The list of sample values 
 
     Raises
     ------
@@ -116,17 +116,17 @@ def get_pvalue(test, data, alpha=0.05) -> list:
 
     Parameters
     ----------
-    test : _type_
-        _description_
-    data : _type_
-        _description_
+    test : number
+        The value to test
+    data : number
+        The data to test
     alpha : float, optional
-        _description_, by default 0.05
+        The significance level, by default 0.05
 
     Returns
     -------
     list
-        _description_
+        The list with the p-value and the evaluation True or False
     """   
     bootstrap_values = np.array(data)
     p_value = len(bootstrap_values[bootstrap_values < test]) / len(bootstrap_values)
